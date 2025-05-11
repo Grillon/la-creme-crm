@@ -3,83 +3,69 @@
 import { useState, useEffect } from "react";
 
 const OPTIONAL_FIELDS = [
-  { key: "contactTags", label: "🏷️ Tags", multi: true },
-  { key: "contactRole", label: "👔 Rôle", multi: true },
-  { key: "contactEmail", label: "✉️ Email", multi: true },
-  { key: "contactPhone", label: "📞 Téléphone", multi: true },
-  { key: "contactWebsite", label: "🌐 Site Web", multi: true },
-  { key: "contactX", label: "𝕏 X", multi: true },
-  { key: "contactTelegram", label: "📲 Telegram", multi: true },
-  { key: "contactDiscord", label: "💬 Discord", multi: true },
-  { key: "contactLinkedin", label: "🔗 LinkedIn", multi: true },
-  { key: "contactIdeas", label: "💡 Idées", multi: true },
-  { key: "contactDocuments", label: "📎 Documents (URL)", multi: true },
-  { key: "contactPhoto", label: "🖼️ Photo (URL)", multi: false },
+  { label: "📧 Email", key: "contactEmail", multi: true },
+  { label: "📱 Téléphone", key: "contactPhone", multi: true },
+  { label: "🌐 Site web", key: "contactWebsite", multi: true },
+  { label: "📁 Documents", key: "contactDocuments", multi: true },
+  { label: "💬 Telegram", key: "contactTelegram", multi: true },
+  { label: "💼 LinkedIn", key: "contactLinkedin", multi: true },
+  { label: "🐦 X", key: "contactX", multi: true },
+  { label: "🕹 Discord", key: "contactDiscord", multi: true }
 ];
 
-const defaultForm = {
-  id: "",
-  contactName: "",
-  contactTags: [],
-  contactCompany: "",
-  contactRole: [],
-  contactPhoto: "",
-  contactEmail: [],
-  contactPhone: [],
-  contactWebsite: [],
-  contactX: [],
-  contactTelegram: [],
-  contactDiscord: [],
-  contactLinkedin: [],
-  contactFeeling: "",
-  contactIdeas: [],
-  contactDocuments: [],
-  contactNotes: "",
-};
-
-export default function ContactForm({
-  form,
-  setForm,
-  onAdd,
-  onUpdate,
-  editing,
-  cancelEdit,
-}) {
-  const [visibleFields, setVisibleFields] = useState(
-    new Set(["contactTags", "contactRole"])
-  );
+export default function ContactForm({ form, setForm, onAdd, onUpdate, editing, cancelEdit }) {
+  const [visibleFields, setVisibleFields] = useState(new Set());
 
   useEffect(() => {
-    if (!form) setForm(defaultForm);
-  }, [form]);
+  Object.entries(form).forEach(([key, val]) => {
+    if (Array.isArray(val) && val.length > 0) {
+      setVisibleFields(prev => new Set(prev).add(key));
+    }
+  });
+}, [form]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    editing ? onUpdate(form) : onAdd(form);
+  };
 
   const renderField = (label, key, multi = false) => (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {label}
-      </label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
       {multi ? (
         <div className="space-y-2">
-          {form[key]?.map((val, i) => (
+          {form[key].map((entry, i) => (
             <div key={`${key}-${i}`} className="flex gap-2">
               <input
-                className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-800 dark:text-white"
-                value={val}
+                className="border rounded px-2 py-1 w-1/3 bg-white dark:bg-gray-800 dark:text-white"
+                placeholder="Label"
+                value={entry.title}
                 onChange={(e) => {
-                  const copy = [...form[key]];
-                  copy[i] = e.target.value;
-                  setForm({ ...form, [key]: copy });
+                  const updated = [...form[key]];
+                  updated[i].title = e.target.value;
+                  setForm({ ...form, [key]: updated });
+                }}
+              />
+              <input
+                className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-800 dark:text-white"
+                placeholder="Valeur"
+                value={entry.value}
+                onChange={(e) => {
+                  const updated = [...form[key]];
+                  updated[i].value = e.target.value;
+                  setForm({ ...form, [key]: updated });
                 }}
               />
               <button
                 type="button"
-                className="bg-red-500 text-white px-2 rounded"
+                className="text-red-500"
                 onClick={() => {
-                  const copy = form[key].filter((_, idx) => idx !== i);
-                  setForm({ ...form, [key]: copy });
+                  const updated = [...form[key]];
+                  updated.splice(i, 1);
+                  setForm({ ...form, [key]: updated });
                 }}
               >
-                -
+                −
               </button>
             </div>
           ))}
@@ -95,77 +81,47 @@ export default function ContactForm({
   );
 
   return (
-    <div>
-      <div className="flex flex-wrap gap-2 mb-4">
-        {OPTIONAL_FIELDS.map(({ key, label, multi }) => (
+    <form onSubmit={handleSubmit} className="mb-8">
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {OPTIONAL_FIELDS.map(({ label, key, multi }) => (
           <button
-            key={key}
             type="button"
-            title={label.replace(/^[^\s]+\s/, "")}
+            key={key}
             onClick={() => {
-              setVisibleFields((prev) => new Set(prev).add(key));
-              if (multi) {
-                setForm((prev) => ({
-                  ...prev,
-                  [key]: [...(prev[key] || []), ""],
-                }));
-              } else {
-                setForm((prev) => ({ ...prev, [key]: "" }));
-              }
+              setVisibleFields(prev => new Set(prev).add(key));
+              setForm(prev => ({
+                ...prev,
+                [key]: [...(prev[key] || []), { title: "", value: "" }],
+              }));
             }}
             className="text-xl px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+            title={label}
           >
             {label.split(" ")[0]}
           </button>
         ))}
       </div>
-      <form className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        {renderField("Nom", "contactName")}
-        {renderField("Société", "contactCompany")}
-        {renderField("Feeling", "contactFeeling")}
-        {renderField("Notes", "contactNotes")}
-        {[...visibleFields].map((fieldKey) => {
-          const field = OPTIONAL_FIELDS.find((f) => f.key === fieldKey);
-          return field ? (
-            <div key={field.key}>
-              {renderField(
-                field.label.replace(/^[^\s]+\s/, ""),
-                field.key,
-                field.multi
-              )}
-            </div>
-          ) : null;
-        })}
-        <div className="col-span-full flex gap-4">
-          {editing ? (
-            <button
-              type="button"
-              className="bg-yellow-500 text-white px-4 py-2 rounded"
-              onClick={() => onUpdate(form)}
-            >
-              Mettre à jour
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="bg-green-600 text-white px-4 py-2 rounded"
-              onClick={() => onAdd(form)}
-            >
-              Ajouter
-            </button>
-          )}
-          <button
-            type="button"
-            className="bg-gray-300 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded"
-            onClick={() => {
-              setForm(defaultForm);
-              cancelEdit();
-            }}
-          >
-            Réinitialiser
+      {renderField("Photo (URL)", "contactPhoto")}
+      {renderField("Nom", "contactName")}
+      {renderField("Entreprise", "contactCompany")}
+      {[...visibleFields].map(fieldKey => {
+        const field = OPTIONAL_FIELDS.find(f => f.key === fieldKey);
+        return field ? (
+          <div key={field.key}>
+            {renderField(field.label.replace(/^[^\s]+\s/, ""), field.key, field.multi)}
+          </div>
+        ) : null;
+      })}
+      <div className="flex gap-2">
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+          {editing ? "Mettre à jour" : "Ajouter"}
+        </button>
+        {editing && (
+          <button type="button" onClick={cancelEdit} className="text-gray-500">
+            Annuler
           </button>
-        </div>
-      </form>
-    </div>
+        )}
+      </div>
+    </form>
   );
 }

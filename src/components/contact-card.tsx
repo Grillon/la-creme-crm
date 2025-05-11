@@ -1,68 +1,47 @@
 "use client";
 
 export default function ContactCard({ contact, onEdit, onDelete }) {
+  const renderField = (label, val) =>
+    val && val.length > 0 && (
+      <p>
+        <strong>{label}:</strong>{" "}
+        {Array.isArray(val)
+          ? val.map((v, i) =>
+              typeof v === "object"
+                ? <span key={i}>{v.title ? v.title + ": " : ""}{v.value}</span>
+                : <span key={i}>{v}</span>
+            )
+          : val}
+      </p>
+    );
+
   return (
-    <div className="border p-4 rounded bg-white dark:bg-gray-800 shadow">
-      <div className="flex justify-between items-center mb-2">
-        <div>
-          <h2 className="text-xl font-bold">{contact.contactName}</h2>
-          {contact.contactCompany && (
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              {contact.contactCompany}
-            </p>
-          )}
-          {contact.contactRole?.length > 0 && (
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              {contact.contactRole.join(", ")}
-            </p>
-          )}
-        </div>
-        <div className="space-x-2">
-          <button
-            className="text-blue-600 dark:text-blue-400"
-            onClick={() => onEdit(contact)}
-          >
-            Modifier
-          </button>
-          <button
-            className="text-red-600 dark:text-red-400"
-            onClick={() => onDelete(contact.id)}
-          >
-            Supprimer
-          </button>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-        {Object.entries(contact).map(([key, val]) => {
-          if (
-            key === "id" ||
-            key === "contactName" ||
-            key === "contactCompany" ||
-            key === "contactRole"
-          )
-            return null;
-          if (!val || (Array.isArray(val) && val.length === 0)) return null;
-          return (
-            <div key={key}>
-              <strong>
-                {key
-                  .replace("contact", "")
-                  .replace(/([A-Z])/g, " $1")
-                  .trim()}
-                :
-              </strong>
-              {Array.isArray(val) ? (
-                <ul className="list-disc list-inside">
-                  {val.map((v, i) => (
-                    <li key={`${key}-${i}`}>{v}</li>
-                  ))}
-                </ul>
-              ) : (
-                <span> {val}</span>
-              )}
-            </div>
-          );
-        })}
+    <div className="p-4 border rounded bg-white dark:bg-gray-800 dark:text-white">
+      <h2 className="text-xl font-semibold">{contact.contactName}</h2>
+      {contact.contactPhoto && (
+  <img
+    src={contact.contactPhoto}
+    alt="photo"
+    className="w-24 h-24 object-cover rounded-full border mb-2"
+  />
+)}
+
+      {renderField("Entreprise", contact.contactCompany)}
+      {renderField("Tags", contact.contactTags)}
+      {renderField("Emails", contact.contactEmail)}
+      {renderField("Téléphones", contact.contactPhone)}
+      {renderField("Sites web", contact.contactWebsite)}
+      {renderField("Documents", contact.contactDocuments)}
+      {renderField("Telegram", contact.contactTelegram)}
+      {renderField("Discord", contact.contactDiscord)}
+      {renderField("LinkedIn", contact.contactLinkedin)}
+      {renderField("X (Twitter)", contact.contactX)}
+      {renderField("Feeling", contact.contactFeeling)}
+      {renderField("Idées", contact.contactIdeas)}
+      {renderField("Notes", contact.contactNotes)}
+      <div className="mt-2 flex gap-4">
+        <button onClick={() => onEdit(contact)} className="text-blue-500">Modifier</button>
+        <button onClick={() => onDelete(contact.id)} className="text-red-500">Supprimer</button>
       </div>
     </div>
   );
