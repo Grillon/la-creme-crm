@@ -167,7 +167,23 @@ export default function Home() {
             key={key}
             type="button"
             title={label.replace(/^[^\s]+\s/, "")}
-            onClick={() => setVisibleFields((prev) => new Set(prev).add(key))}
+            onClick={() => {
+              setVisibleFields((prev) => new Set(prev).add(key));
+              if (
+                form[key] !== undefined &&
+                Array.isArray(form[key]) &&
+                form[key].length === 0
+              ) {
+                setForm((prev) => ({ ...prev, [key]: [""] }));
+              }
+              if (
+                form[key] !== undefined &&
+                !Array.isArray(form[key]) &&
+                form[key] === ""
+              ) {
+                setForm((prev) => ({ ...prev, [key]: "" }));
+              }
+            }}
             className={`text-xl px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${
               visibleFields.has(key) ? "opacity-30 pointer-events-none" : ""
             }`}
@@ -184,14 +200,17 @@ export default function Home() {
         {renderField("Notes", "contactNotes")}
         {[...visibleFields].map((fieldKey) => {
           const field = OPTIONAL_FIELDS.find((f) => f.key === fieldKey);
-          return field
-            ? renderField(
+          return field ? (
+            <div key={field.key}>
+              {renderField(
                 field.label.replace(/^[^\s]+\s/, ""),
                 field.key,
                 field.multi
-              )
-            : null;
+              )}
+            </div>
+          ) : null;
         })}
+
         <div className="col-span-full flex gap-4">
           {editing ? (
             <button
