@@ -5,6 +5,7 @@ export type Contact = {
   contactCompany: string;
   contactRole: string[];
   contactPhoto: string;
+  contactInfos: { title: string; value: string }[];
   contactEmail: { title: string; value: string }[];
   contactPhone: { title: string; value: string }[];
   contactWebsite: { title: string; value: string }[];

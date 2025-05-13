@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Contact } from "@/types/contact";
 
 const OPTIONAL_FIELDS: { label: string; key: keyof Contact }[] = [
+  { label: "📝 Infos", key: "contactInfos" },
   { label: "📧 Email", key: "contactEmail" },
   { label: "📱 Téléphone", key: "contactPhone" },
   { label: "🌐 Site web", key: "contactWebsite" },
@@ -35,6 +36,7 @@ export default function Page() {
     contactFeeling: "",
     contactIdeas: [],
     contactDocuments: [],
+    contactInfos: [],
     contactNotes: "",
   });
 

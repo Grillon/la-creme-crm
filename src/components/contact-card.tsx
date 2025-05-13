@@ -20,17 +20,22 @@ const renderField = (
     if (!val || val.length === 0) return null;
 
     return (
-      <p>
-        <strong>{label}:</strong>{" "}
-        {Array.isArray(val)
-          ? val.map((v, i) =>
-              typeof v === "object"
-                ? <span key={i}>{v.title ? v.title + ": " : ""}{v.value} </span>
-                : <span key={i}>{v} </span>
-            )
-          : val}
-      </p>
-    );
+  <div className="mb-2">
+    <strong>{label}:</strong>
+    {Array.isArray(val) ? (
+      <ul className="list-disc list-inside ml-4">
+        {val.map((v, i) =>
+          typeof v === "object"
+            ? <li key={i}><strong>{v.title ? `${v.title}: ` : ""}</strong>{v.value}</li>
+            : <li key={i}>{v}</li>
+        )}
+      </ul>
+    ) : (
+      <p>{val}</p>
+    )}
+  </div>
+);
+
   };
 
   return (
@@ -47,6 +52,7 @@ const renderField = (
         />
       )}
       {renderField("Entreprise", contact.contactCompany)}
+      {renderField("Infos", contact.contactInfos)}
       {renderField("Tags", contact.contactTags)}
       {renderField("Emails", contact.contactEmail)}
       {renderField("Téléphones", contact.contactPhone)}
