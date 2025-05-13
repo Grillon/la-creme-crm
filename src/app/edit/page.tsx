@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ContactCard from "@/components/contact-card";
 import { v4 as uuidv4 } from "uuid";
 import { Contact } from "@/types/contact";
 
@@ -117,7 +118,7 @@ export default function Page() {
       ) : (
         <input
           className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-800 dark:text-white"
-          value={form[key] as string}
+	  value={(form[key] as string) ?? ""}
           onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         />
       )}
@@ -148,6 +149,7 @@ export default function Page() {
       </div>
       {renderField("Nom", "contactName", false)}
       {renderField("Entreprise", "contactCompany", false)}
+      {renderField("Photo (URL)", "contactPhoto", false)}
       {[...visibleFields].map((fieldKey) => {
         const field = OPTIONAL_FIELDS.find((f) => f.key === fieldKey);
         return field ? (
@@ -164,6 +166,14 @@ export default function Page() {
           Annuler
         </button>
       </div>
+      <hr className="my-6 border-gray-400 dark:border-gray-700" />
+<h2 className="text-xl font-semibold mb-4">Aperçu</h2>
+<ContactCard
+  contact={form}
+  onEdit={() => {}}
+  onDelete={() => {}}
+/>
+
     </form>
   );
 }
