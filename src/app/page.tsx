@@ -138,7 +138,7 @@ const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     header: true,
     complete: (results) => {
     const rows = results.data as Record<string, string>[];
-    const parsed = rows.map((row) => {
+const parsed = rows.map((row) => {
   const contact: Partial<Contact> = {
     id: uuidv4(),
     contactName: row.contactName,
@@ -203,15 +203,15 @@ const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
       />
       <div className="space-y-4">
         {contacts.filter(c => {
-          const q = search.toLowerCase();
-          return (
-            c.contactName.toLowerCase().includes(q) ||
-            c.contactCompany.toLowerCase().includes(q) ||
-            c.contactTags.some(tag => tag.toLowerCase().includes(q)) ||
-            c.contactEmail.some(e => e.value.toLowerCase().includes(q)) ||
-            c.contactPhone.some(p => p.value.toLowerCase().includes(q))
-          );
-        }).map(contact => (
+  const q = search.toLowerCase();
+  return (
+    c.contactName?.toLowerCase().includes(q) ||
+    c.contactCompany?.toLowerCase().includes(q) ||
+    c.contactTags?.some(tag => tag.toLowerCase().includes(q)) ||
+    c.contactEmail?.some(e => e.value.toLowerCase().includes(q)) ||
+    c.contactPhone?.some(p => p.value.toLowerCase().includes(q))
+  );
+}).map(contact => (
           <ContactCard
             key={contact.id}
             contact={contact}
