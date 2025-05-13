@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Papa from "papaparse";
 import { v4 as uuidv4 } from "uuid";
 import ContactForm from "@/components/contact-form";
 import ContactCard from "@/components/contact-card";
@@ -101,6 +102,74 @@ export default function Home() {
     });
   };
 
+  const handleExport = () => {
+  const flat = contacts.map((c) => ({
+    ...c,
+    contactTags: c.contactTags.join("|"),
+    contactIdeas: c.contactIdeas.join("|"),
+    contactEmail: c.contactEmail.map(e => `${e.title}:${e.value}`).join("|"),
+    contactPhone: c.contactPhone.map(e => `${e.title}:${e.value}`).join("|"),
+    contactWebsite: c.contactWebsite.map(e => `${e.title}:${e.value}`).join("|"),
+    contactX: c.contactX.map(e => `${e.title}:${e.value}`).join("|"),
+    contactTelegram: c.contactTelegram.map(e => `${e.title}:${e.value}`).join("|"),
+    contactDiscord: c.contactDiscord.map(e => `${e.title}:${e.value}`).join("|"),
+    contactLinkedin: c.contactLinkedin.map(e => `${e.title}:${e.value}`).join("|"),
+    contactDocuments: c.contactDocuments.map(e => `${e.title}:${e.value}`).join("|"),
+  }));
+  const csv = Papa.unparse(flat);
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "contacts.csv";
+  a.click();
+};
+
+const parsePairs = (str: string) =>
+  str?.split("|").map(s => {
+    const [title, value] = s.split(":");
+    return { title, value };
+  }) || [];
+
+const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  Papa.parse(file, {
+    header: true,
+    complete: (results) => {
+    const rows = results.data as Record<string, string>[];
+    const parsed = rows.map((row) => {
+  const contact: Partial<Contact> = {
+    id: uuidv4(),
+    contactName: row.contactName,
+  };
+
+  if (row.contactCompany) contact.contactCompany = row.contactCompany;
+  if (row.contactTags) contact.contactTags = row.contactTags.split("|");
+  if (row.contactIdeas) contact.contactIdeas = row.contactIdeas.split("|");
+  if (row.contactPhoto) contact.contactPhoto = row.contactPhoto;
+  if (row.contactEmail) contact.contactEmail = parsePairs(row.contactEmail);
+  if (row.contactPhone) contact.contactPhone = parsePairs(row.contactPhone);
+  if (row.contactWebsite) contact.contactWebsite = parsePairs(row.contactWebsite);
+  if (row.contactX) contact.contactX = parsePairs(row.contactX);
+  if (row.contactTelegram) contact.contactTelegram = parsePairs(row.contactTelegram);
+  if (row.contactDiscord) contact.contactDiscord = parsePairs(row.contactDiscord);
+  if (row.contactLinkedin) contact.contactLinkedin = parsePairs(row.contactLinkedin);
+  if (row.contactDocuments) contact.contactDocuments = parsePairs(row.contactDocuments);
+  if (row.contactFeeling) contact.contactFeeling = row.contactFeeling;
+  if (row.contactNotes) contact.contactNotes = row.contactNotes;
+
+  contact.contactRole = [];
+
+  return contact as Contact;
+});
+
+      setContacts(parsed);
+    }
+  });
+};
+
+
   return (
     <div className="p-6 max-w-4xl mx-auto text-black dark:text-white bg-gray-50 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">LaCrème CRM</h1>
@@ -111,6 +180,16 @@ export default function Home() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
+      <div className="flex gap-4 mb-4">
+  <button onClick={handleExport} className="bg-green-600 text-white px-4 py-2 rounded">
+    Exporter CSV
+  </button>
+  <label className="bg-blue-600 text-white px-4 py-2 rounded cursor-pointer">
+    Importer CSV
+    <input type="file" accept=".csv" onChange={handleImport} hidden />
+  </label>
+</div>
+
       <ContactForm
         form={form}
         setForm={setForm}
