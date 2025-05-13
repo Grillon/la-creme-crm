@@ -1,31 +1,71 @@
 "use client";
+import Image from "next/image";
 
-export default function ContactCard({ contact, onEdit, onDelete }) {
-  const renderField = (label, val) =>
-    val && val.length > 0 && (
+type Contact = {
+  id: string;
+  contactName: string;
+  contactTags: string[];
+  contactCompany: string;
+  contactRole: string[];
+  contactPhoto: string;
+  contactEmail: { title: string; value: string }[];
+  contactPhone: { title: string; value: string }[];
+  contactWebsite: { title: string; value: string }[];
+  contactX: { title: string; value: string }[];
+  contactTelegram: { title: string; value: string }[];
+  contactDiscord: { title: string; value: string }[];
+  contactLinkedin: { title: string; value: string }[];
+  contactFeeling: string;
+  contactIdeas: string[];
+  contactDocuments: { title: string; value: string }[];
+  contactNotes: string;
+};
+
+
+export default function ContactCard({
+  contact,
+  onEdit,
+  onDelete,
+}: {
+  contact: Contact;
+  onEdit: (c: Contact) => void;
+  onDelete: (id: string) => void;
+}) {
+
+const renderField = (
+  label: string,
+  val: string | string[] | { title: string; value: string }[]
+) => {
+
+    if (!val || val.length === 0) return null;
+
+    return (
       <p>
         <strong>{label}:</strong>{" "}
         {Array.isArray(val)
           ? val.map((v, i) =>
               typeof v === "object"
-                ? <span key={i}>{v.title ? v.title + ": " : ""}{v.value}</span>
-                : <span key={i}>{v}</span>
+                ? <span key={i}>{v.title ? v.title + ": " : ""}{v.value} </span>
+                : <span key={i}>{v} </span>
             )
           : val}
       </p>
     );
+  };
 
   return (
     <div className="p-4 border rounded bg-white dark:bg-gray-800 dark:text-white">
       <h2 className="text-xl font-semibold">{contact.contactName}</h2>
       {contact.contactPhoto && (
-  <img
-    src={contact.contactPhoto}
-    alt="photo"
-    className="w-24 h-24 object-cover rounded-full border mb-2"
-  />
-)}
-
+        <Image
+          src={contact.contactPhoto}
+          alt="photo"
+          width={96}
+          height={96}
+          className="rounded-full border mb-2 object-cover"
+          unoptimized
+        />
+      )}
       {renderField("Entreprise", contact.contactCompany)}
       {renderField("Tags", contact.contactTags)}
       {renderField("Emails", contact.contactEmail)}

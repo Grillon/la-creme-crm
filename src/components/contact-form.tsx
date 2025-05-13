@@ -2,39 +2,87 @@
 
 import { useState, useEffect } from "react";
 
-const OPTIONAL_FIELDS = [
-  { label: "📧 Email", key: "contactEmail", multi: true },
-  { label: "📱 Téléphone", key: "contactPhone", multi: true },
-  { label: "🌐 Site web", key: "contactWebsite", multi: true },
-  { label: "📁 Documents", key: "contactDocuments", multi: true },
-  { label: "💬 Telegram", key: "contactTelegram", multi: true },
-  { label: "💼 LinkedIn", key: "contactLinkedin", multi: true },
-  { label: "🐦 X", key: "contactX", multi: true },
-  { label: "🕹 Discord", key: "contactDiscord", multi: true }
+const OPTIONAL_FIELDS: { label: string; key: keyof Contact }[] = [
+  { label: "📧 Email", key: "contactEmail" },
+  { label: "📱 Téléphone", key: "contactPhone" },
+  { label: "🌐 Site web", key: "contactWebsite" },
+  { label: "📁 Documents", key: "contactDocuments" },
+  { label: "💬 Telegram", key: "contactTelegram" },
+  { label: "💼 LinkedIn", key: "contactLinkedin" },
+  { label: "🐦 X", key: "contactX" },
+  { label: "🕹 Discord", key: "contactDiscord" },
 ];
 
-export default function ContactForm({ form, setForm, onAdd, onUpdate, editing, cancelEdit }) {
+type Contact = {
+  id: string;
+  contactName: string;
+  contactTags: string[];
+  contactCompany: string;
+  contactRole: string[];
+  contactPhoto: string;
+  contactEmail: { title: string; value: string }[];
+  contactPhone: { title: string; value: string }[];
+  contactWebsite: { title: string; value: string }[];
+  contactX: { title: string; value: string }[];
+  contactTelegram: { title: string; value: string }[];
+  contactDiscord: { title: string; value: string }[];
+  contactLinkedin: { title: string; value: string }[];
+  contactFeeling: string;
+  contactIdeas: string[];
+  contactDocuments: { title: string; value: string }[];
+  contactNotes: string;
+};
+
+export default function ContactForm({
+  form,
+  setForm,
+  onAdd,
+  onUpdate,
+  editing,
+  cancelEdit,
+}: {
+  form: Contact;
+  setForm: React.Dispatch<React.SetStateAction<Contact>>;
+  onAdd: (c: Contact) => void;
+  onUpdate: (c: Contact) => void;
+  editing: boolean;
+  cancelEdit: () => void;
+}) {
+
   const [visibleFields, setVisibleFields] = useState(new Set());
-
-  useEffect(() => {
-  Object.entries(form).forEach(([key, val]) => {
-    if (Array.isArray(val) && val.length > 0) {
-      setVisibleFields(prev => new Set(prev).add(key));
+    useEffect(() => {
+    for (const [key, val] of Object.entries(form)) {
+      if (Array.isArray(val) && val.length > 0) {
+        setVisibleFields((prev) => new Set(prev).add(key));
+      }
     }
-  });
-}, [form]);
+  }, [form]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    editing ? onUpdate(form) : onAdd(form);
+  const handleSubmit = (e: React.FormEvent) => {
+	  e.preventDefault();
+if (editing) {
+  onUpdate(form);
+} else {
+  onAdd(form);
+}
+
   };
 
-  const renderField = (label, key, multi = false) => (
+  const renderField = (
+  label: string,
+  key: keyof Contact,
+  multi: boolean = true
+) => (
+
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        {label}
+      </label>
       {multi ? (
         <div className="space-y-2">
-          {form[key].map((entry, i) => (
+	{Array.isArray(form[key]) &&
+  form[key].map((entry, i) => (
+
             <div key={`${key}-${i}`} className="flex gap-2">
               <input
                 className="border rounded px-2 py-1 w-1/3 bg-white dark:bg-gray-800 dark:text-white"
@@ -42,7 +90,7 @@ export default function ContactForm({ form, setForm, onAdd, onUpdate, editing, c
                 value={entry.title}
                 onChange={(e) => {
                   const updated = [...form[key]];
-                  updated[i].title = e.target.value;
+		  (updated[i] as { title: string; value: string }).title = e.target.value;
                   setForm({ ...form, [key]: updated });
                 }}
               />
@@ -52,7 +100,7 @@ export default function ContactForm({ form, setForm, onAdd, onUpdate, editing, c
                 value={entry.value}
                 onChange={(e) => {
                   const updated = [...form[key]];
-                  updated[i].value = e.target.value;
+		  (updated[i] as { title: string; value: string }).value = e.target.value;
                   setForm({ ...form, [key]: updated });
                 }}
               />
@@ -73,7 +121,7 @@ export default function ContactForm({ form, setForm, onAdd, onUpdate, editing, c
       ) : (
         <input
           className="border rounded px-2 py-1 w-full bg-white dark:bg-gray-800 dark:text-white"
-          value={form[key]}
+	  value={form[key] as string}
           onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         />
       )}
@@ -83,13 +131,13 @@ export default function ContactForm({ form, setForm, onAdd, onUpdate, editing, c
   return (
     <form onSubmit={handleSubmit} className="mb-8">
       <div className="flex gap-2 mb-4 flex-wrap">
-        {OPTIONAL_FIELDS.map(({ label, key, multi }) => (
+      {OPTIONAL_FIELDS.map(({ label, key }) => (
           <button
             type="button"
             key={key}
             onClick={() => {
-              setVisibleFields(prev => new Set(prev).add(key));
-              setForm(prev => ({
+              setVisibleFields((prev) => new Set(prev).add(key));
+              setForm((prev) => ({
                 ...prev,
                 [key]: [...(prev[key] || []), { title: "", value: "" }],
               }));
@@ -101,14 +149,13 @@ export default function ContactForm({ form, setForm, onAdd, onUpdate, editing, c
           </button>
         ))}
       </div>
-      {renderField("Photo (URL)", "contactPhoto")}
-      {renderField("Nom", "contactName")}
-      {renderField("Entreprise", "contactCompany")}
-      {[...visibleFields].map(fieldKey => {
-        const field = OPTIONAL_FIELDS.find(f => f.key === fieldKey);
+      {renderField("Nom", "contactName", false)}
+      {renderField("Entreprise", "contactCompany", false)}
+      {[...visibleFields].map((fieldKey) => {
+        const field = OPTIONAL_FIELDS.find((f) => f.key === fieldKey);
         return field ? (
           <div key={field.key}>
-            {renderField(field.label.replace(/^[^\s]+\s/, ""), field.key, field.multi)}
+            {renderField(field.label.replace(/^[^\s]+\s/, ""), field.key, true)}
           </div>
         ) : null;
       })}
@@ -125,3 +172,4 @@ export default function ContactForm({ form, setForm, onAdd, onUpdate, editing, c
     </form>
   );
 }
+

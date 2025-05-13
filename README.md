@@ -1,27 +1,36 @@
 # LaCrème CRM
 
-Un micro CRM local pour freelances, événements, ou réseau perso. Données stockées en `localStorage`, aucune synchronisation externe. Aucun backend.
+Mini CRM personnel local et minimaliste pour gérer vos contacts.
 
 ## Fonctionnalités
 
-- Formulaire complet avec :
-  - nom, entreprise, photo
-  - emails, téléphones, sites, réseaux sociaux (LinkedIn, X, Telegram, Discord)
-  - documents, idées, tags, notes
-- Icônes de raccourcis pour afficher les champs facultatifs
-- Recherche multicritère globale (nom, entreprise, tags, contenu)
-- Mode sombre
-- Export CSV / Import CSV (à venir)
+- Ajout/modification/suppression de contacts
+- Champs personnalisables (email, téléphone, site web, réseaux sociaux, documents...)
+- Ajout de titres (labels) aux entrées multiples
+- Recherche globale multi-critère
+- Stockage local (localStorage)
+- Export/Import CSV
+- Interface responsive avec prise en charge du dark mode
 
-## Démarrage
+## Lancer en local
 
 ```bash
 npm install
 npm run dev
 ```
 
-## À faire
+## Export CSV
 
-- Support import/export CSV
-- Sélecteur d'images drag'n'drop
-- Multi-utilisateur local (profils)
+Cliquez sur **"Exporter CSV"** pour télécharger vos contacts. Chaque ligne correspond à un contact, les champs multi-entrées sont séparés par `|`.
+
+## Import CSV
+
+Cliquez sur **"Importer CSV"** et sélectionnez un fichier exporté au même format. Cela remplacera les contacts actuels.
+
+## Stockage
+
+Aucune donnée n’est envoyée à un serveur. Tout est conservé dans le `localStorage` de votre navigateur.
+
+## Licence
+
+MIT

@@ -5,10 +5,31 @@ import { v4 as uuidv4 } from "uuid";
 import ContactForm from "@/components/contact-form";
 import ContactCard from "@/components/contact-card";
 
+type Contact = {
+  id: string;
+  contactName: string;
+  contactTags: string[];
+  contactCompany: string;
+  contactRole: string[];
+  contactPhoto: string;
+  contactEmail: { title: string; value: string }[];
+  contactPhone: { title: string; value: string }[];
+  contactWebsite: { title: string; value: string }[];
+  contactX: { title: string; value: string }[];
+  contactTelegram: { title: string; value: string }[];
+  contactDiscord: { title: string; value: string }[];
+  contactLinkedin: { title: string; value: string }[];
+  contactFeeling: string;
+  contactIdeas: string[];
+  contactDocuments: { title: string; value: string }[];
+  contactNotes: string;
+};
+
+
 export default function Home() {
   const [search, setSearch] = useState("");
-  const [contacts, setContacts] = useState([]);
-  const [form, setForm] = useState({
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [form, setForm] = useState<Contact>({
     id: "",
     contactName: "",
     contactTags: [],
@@ -38,22 +59,22 @@ export default function Home() {
     localStorage.setItem("contacts", JSON.stringify(contacts));
   }, [contacts]);
 
-  const handleAdd = (newContact) => {
+  const handleAdd = (newContact: Contact) => {
     setContacts([...contacts, { ...newContact, id: uuidv4() }]);
     resetForm();
   };
 
-  const handleUpdate = (updatedContact) => {
+  const handleUpdate = (updatedContact: Contact) => {
     setContacts(contacts.map(c => c.id === updatedContact.id ? updatedContact : c));
     setEditing(false);
     resetForm();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     setContacts(contacts.filter(c => c.id !== id));
   };
 
-  const handleEdit = (contact) => {
+  const handleEdit = (contact: Contact) => {
     setForm(contact);
     setEditing(true);
   };
@@ -80,24 +101,6 @@ export default function Home() {
     });
   };
 
-  const matches = (contact) => {
-    const q = search.toLowerCase();
-    return (
-      contact.contactName?.toLowerCase().includes(q) ||
-      contact.contactCompany?.toLowerCase().includes(q) ||
-      contact.contactTags?.some(tag => tag.toLowerCase().includes(q)) ||
-      contact.contactEmail?.some(e => e.value?.toLowerCase().includes(q)) ||
-      contact.contactPhone?.some(p => p.value?.toLowerCase().includes(q)) ||
-      contact.contactWebsite?.some(w => w.value?.toLowerCase().includes(q)) ||
-      contact.contactX?.some(x => x.value?.toLowerCase().includes(q)) ||
-      contact.contactTelegram?.some(t => t.value?.toLowerCase().includes(q)) ||
-      contact.contactDiscord?.some(d => d.value?.toLowerCase().includes(q)) ||
-      contact.contactLinkedin?.some(l => l.value?.toLowerCase().includes(q)) ||
-      contact.contactIdeas?.some(i => i.value?.toLowerCase().includes(q)) ||
-      contact.contactNotes?.toLowerCase().includes(q)
-    );
-  };
-
   return (
     <div className="p-6 max-w-4xl mx-auto text-black dark:text-white bg-gray-50 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">LaCrème CRM</h1>
@@ -120,7 +123,16 @@ export default function Home() {
         }}
       />
       <div className="space-y-4">
-        {contacts.filter(matches).map(contact => (
+        {contacts.filter(c => {
+          const q = search.toLowerCase();
+          return (
+            c.contactName.toLowerCase().includes(q) ||
+            c.contactCompany.toLowerCase().includes(q) ||
+            c.contactTags.some(tag => tag.toLowerCase().includes(q)) ||
+            c.contactEmail.some(e => e.value.toLowerCase().includes(q)) ||
+            c.contactPhone.some(p => p.value.toLowerCase().includes(q))
+          );
+        }).map(contact => (
           <ContactCard
             key={contact.id}
             contact={contact}
