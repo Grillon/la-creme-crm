@@ -33,14 +33,15 @@ const handleExport = () => {
     ...c,
     contactTags: c.contactTags?.join("|") || "",
     contactIdeas: c.contactIdeas?.join("|") || "",
-    contactEmail: c.contactEmail?.map(e => `${e.title}:${e.value}`).join("|") || "",
-    contactPhone: c.contactPhone?.map(e => `${e.title}:${e.value}`).join("|") || "",
-    contactWebsite: c.contactWebsite?.map(e => `${e.title}:${e.value}`).join("|") || "",
-    contactX: c.contactX?.map(e => `${e.title}:${e.value}`).join("|") || "",
-    contactTelegram: c.contactTelegram?.map(e => `${e.title}:${e.value}`).join("|") || "",
-    contactDiscord: c.contactDiscord?.map(e => `${e.title}:${e.value}`).join("|") || "",
-    contactLinkedin: c.contactLinkedin?.map(e => `${e.title}:${e.value}`).join("|") || "",
-    contactDocuments: c.contactDocuments?.map(e => `${e.title}:${e.value}`).join("|") || ""
+    contactEmail: c.contactEmail?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactPhone: c.contactPhone?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactWebsite: c.contactWebsite?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactX: c.contactX?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactTelegram: c.contactTelegram?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactDiscord: c.contactDiscord?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactLinkedin: c.contactLinkedin?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactDocuments: c.contactDocuments?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactInfos: c.contactInfos?.map(e => `${e.title};${e.value}`).join("|") || ""
   }));
   const csv = Papa.unparse(flat);
   const blob = new Blob([csv], { type: "text/csv" });
@@ -53,7 +54,7 @@ const handleExport = () => {
 
 const parsePairs = (str: string) =>
   str?.split("|").map(s => {
-    const [title, value] = s.split(":");
+    const [title, value] = s.split(";");
     return { title, value };
   }) || [];
 
@@ -81,6 +82,7 @@ const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (row.contactDiscord) c.contactDiscord = parsePairs(row.contactDiscord);
         if (row.contactLinkedin) c.contactLinkedin = parsePairs(row.contactLinkedin);
         if (row.contactDocuments) c.contactDocuments = parsePairs(row.contactDocuments);
+        if (row.contactInfos) c.contactInfos = parsePairs(row.contactInfos);
         if (row.contactFeeling) c.contactFeeling = row.contactFeeling;
         if (row.contactNotes) c.contactNotes = row.contactNotes;
         c.contactRole = [];

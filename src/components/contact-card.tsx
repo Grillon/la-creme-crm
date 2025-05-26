@@ -11,39 +11,50 @@ export default function ContactCard({
   onEdit: (c: Contact) => void;
   onDelete: (id: string) => void;
 }) {
+  const IMAGE_PROXY_SECRET = "maSuperCléUltraSecrète"; // ou mettre un token plus sûr
+  const isDriveUrl = contact.contactPhoto?.includes("drive.google.com");
+  const imageUrl = contact.contactPhoto
+    ? isDriveUrl
+      ? `/api/image-proxy?url=${encodeURIComponent(contact.contactPhoto)}&token=${IMAGE_PROXY_SECRET}`
+      : contact.contactPhoto
+    : null;
 
-const renderField = (
-  label: string,
-  val: string | string[] | { title: string; value: string }[]
-) => {
-
+  const renderField = (
+    label: string,
+    val: string | string[] | { title: string; value: string }[]
+  ) => {
     if (!val || val.length === 0) return null;
 
     return (
-  <div className="mb-2">
-    <strong>{label}:</strong>
-    {Array.isArray(val) ? (
-      <ul className="list-disc list-inside ml-4">
-        {val.map((v, i) =>
-          typeof v === "object"
-            ? <li key={i}><strong>{v.title ? `${v.title}: ` : ""}</strong>{v.value}</li>
-            : <li key={i}>{v}</li>
+      <div className="mb-2">
+        <strong>{label}:</strong>
+        {Array.isArray(val) ? (
+          <ul className="list-disc list-inside ml-4">
+            {val.map((v, i) =>
+              typeof v === "object" ? (
+                <li key={i}>
+                  <strong>{v.title ? `${v.title}: ` : ""}</strong>
+                  {v.value}
+                </li>
+              ) : (
+                <li key={i}>{v}</li>
+              )
+            )}
+          </ul>
+        ) : (
+          <p>{val}</p>
         )}
-      </ul>
-    ) : (
-      <p>{val}</p>
-    )}
-  </div>
-);
-
+      </div>
+    );
   };
 
   return (
     <div className="p-4 border rounded bg-white dark:bg-gray-800 dark:text-white">
       <h2 className="text-xl font-semibold">{contact.contactName}</h2>
-      {contact.contactPhoto && (
+
+      {imageUrl && (
         <Image
-          src={contact.contactPhoto}
+          src={imageUrl}
           alt="photo"
           width={96}
           height={96}
@@ -51,13 +62,14 @@ const renderField = (
           unoptimized
         />
       )}
+
       {renderField("Entreprise", contact.contactCompany)}
-      {renderField("Infos", contact.contactInfos)}
       {renderField("Tags", contact.contactTags)}
       {renderField("Emails", contact.contactEmail)}
       {renderField("Téléphones", contact.contactPhone)}
       {renderField("Sites web", contact.contactWebsite)}
       {renderField("Documents", contact.contactDocuments)}
+      {renderField("Infos", contact.contactInfos)}
       {renderField("Telegram", contact.contactTelegram)}
       {renderField("Discord", contact.contactDiscord)}
       {renderField("LinkedIn", contact.contactLinkedin)}
@@ -65,10 +77,16 @@ const renderField = (
       {renderField("Feeling", contact.contactFeeling)}
       {renderField("Idées", contact.contactIdeas)}
       {renderField("Notes", contact.contactNotes)}
+
       <div className="mt-2 flex gap-4">
-        <button onClick={() => onEdit(contact)} className="text-blue-500">Modifier</button>
-        <button onClick={() => onDelete(contact.id)} className="text-red-500">Supprimer</button>
+        <button onClick={() => onEdit(contact)} className="text-blue-500">
+          Modifier
+        </button>
+        <button onClick={() => onDelete(contact.id)} className="text-red-500">
+          Supprimer
+        </button>
       </div>
     </div>
   );
 }
+
