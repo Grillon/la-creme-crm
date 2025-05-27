@@ -6,6 +6,11 @@ import ContactCard from "@/components/contact-card";
 import { Contact } from "@/types/contact";
 import Papa from "papaparse";
 
+const normalizeText = (text: string) =>
+  text
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
 
 export default function Home() {
   const [search, setSearch] = useState("");
@@ -122,25 +127,43 @@ const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
         Ajouter un contact
       </button>
       <div className="space-y-4">
-        {contacts
-          .filter((c) => {
-            const q = search.toLowerCase();
-            return (
-              c.contactName?.toLowerCase().includes(q) ||
-              c.contactCompany?.toLowerCase().includes(q) ||
-              c.contactTags?.some(tag => tag.toLowerCase().includes(q)) ||
-              c.contactEmail?.some(e => e.value.toLowerCase().includes(q)) ||
-              c.contactPhone?.some(p => p.value.toLowerCase().includes(q))
-            );
-          })
-          .map((contact) => (
-            <ContactCard
-              key={contact.id}
-              contact={contact}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+       {contacts
+  .filter((contact) => {
+    const searchTerms = normalizeText(search).split(/\s+/).filter(Boolean);
+
+    const searchableText = [
+      contact.contactName,
+      contact.contactCompany,
+      ...(contact.contactTags || []),
+      ...(contact.contactInfos || []),
+      ...(contact.contactEmail || []).map(e => `${e.title} ${e.value}`),
+      ...(contact.contactPhone || []).map(p => `${p.title} ${p.value}`),
+      ...(contact.contactWebsite || []).map(w => `${w.title} ${w.value}`),
+      ...(contact.contactX || []).map(x => `${x.title} ${x.value}`),
+      ...(contact.contactTelegram || []).map(t => `${t.title} ${t.value}`),
+      ...(contact.contactDiscord || []).map(d => `${d.title} ${d.value}`),
+      ...(contact.contactLinkedin || []).map(l => `${l.title} ${l.value}`),
+      ...(contact.contactDocuments || []).map(d => `${d.title} ${d.value}`),
+      ...(contact.contactInfos || []).map(i => `${i.title} ${i.value}`),
+      contact.contactFeeling,
+      contact.contactIdeas,
+      contact.contactNotes,
+    ]
+      .flat()
+      .filter(Boolean)
+      .join(" ");
+
+    const normalized = normalizeText(searchableText);
+    return searchTerms.every(term => normalized.includes(term));
+  })
+  .map((contact) => (
+    <ContactCard
+      key={contact.id}
+      contact={contact}
+      onEdit={handleEdit}
+      onDelete={handleDelete}
+    />
+  ))}
       </div>
     </div>
   );
