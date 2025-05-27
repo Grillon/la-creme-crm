@@ -99,11 +99,45 @@ const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
   });
 };
 
+const searchTerms = normalizeText(search).split(/\s+/).filter(Boolean);
+
+const visibleContacts = contacts.filter((contact) => {
+  const searchableText = [
+    contact.contactName,
+    contact.contactCompany,
+    ...(contact.contactTags || []),
+    ...(contact.contactInfos || []).map(i => `${i.title} ${i.value}`),
+    ...(contact.contactEmail || []).map(e => `${e.title} ${e.value}`),
+    ...(contact.contactPhone || []).map(p => `${p.title} ${p.value}`),
+    ...(contact.contactWebsite || []).map(w => `${w.title} ${w.value}`),
+    ...(contact.contactX || []).map(x => `${x.title} ${x.value}`),
+    ...(contact.contactTelegram || []).map(t => `${t.title} ${t.value}`),
+    ...(contact.contactDiscord || []).map(d => `${d.title} ${d.value}`),
+    ...(contact.contactLinkedin || []).map(l => `${l.title} ${l.value}`),
+    ...(contact.contactDocuments || []).map(d => `${d.title} ${d.value}`),
+    contact.contactFeeling,
+    contact.contactIdeas,
+    contact.contactNotes,
+  ]
+    .flat()
+    .filter(Boolean)
+    .join(" ");
+
+  const normalized = normalizeText(searchableText);
+  return searchTerms.every((term) => normalized.includes(term));
+});
+
+
 
   return (
     <div className="p-6 max-w-4xl mx-auto text-black dark:text-white bg-gray-50 dark:bg-gray-900 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">LaCrème CRM</h1>
       <div className="flex gap-4 mb-4">
+<div className="flex justify-between items-center mb-4">
+  <h1 className="text-2xl font-bold">Mes contacts</h1>
+  <span className="text-gray-500">{visibleContacts.length} contact(s)</span>
+</div>
+
   <button onClick={handleExport} className="bg-green-600 text-white px-4 py-2 rounded">
     Exporter CSV
   </button>
@@ -127,43 +161,15 @@ const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
         Ajouter un contact
       </button>
       <div className="space-y-4">
-       {contacts
-  .filter((contact) => {
-    const searchTerms = normalizeText(search).split(/\s+/).filter(Boolean);
-
-    const searchableText = [
-      contact.contactName,
-      contact.contactCompany,
-      ...(contact.contactTags || []),
-      ...(contact.contactInfos || []),
-      ...(contact.contactEmail || []).map(e => `${e.title} ${e.value}`),
-      ...(contact.contactPhone || []).map(p => `${p.title} ${p.value}`),
-      ...(contact.contactWebsite || []).map(w => `${w.title} ${w.value}`),
-      ...(contact.contactX || []).map(x => `${x.title} ${x.value}`),
-      ...(contact.contactTelegram || []).map(t => `${t.title} ${t.value}`),
-      ...(contact.contactDiscord || []).map(d => `${d.title} ${d.value}`),
-      ...(contact.contactLinkedin || []).map(l => `${l.title} ${l.value}`),
-      ...(contact.contactDocuments || []).map(d => `${d.title} ${d.value}`),
-      ...(contact.contactInfos || []).map(i => `${i.title} ${i.value}`),
-      contact.contactFeeling,
-      contact.contactIdeas,
-      contact.contactNotes,
-    ]
-      .flat()
-      .filter(Boolean)
-      .join(" ");
-
-    const normalized = normalizeText(searchableText);
-    return searchTerms.every(term => normalized.includes(term));
-  })
-  .map((contact) => (
-    <ContactCard
-      key={contact.id}
-      contact={contact}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-    />
-  ))}
+      {visibleContacts.map((contact) => (
+  <ContactCard
+    key={contact.id}
+    contact={contact}
+    onEdit={handleEdit}
+    onDelete={handleDelete}
+  />
+))}
+ 
       </div>
     </div>
   );
