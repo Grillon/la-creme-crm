@@ -19,34 +19,73 @@ export default function ContactCard({
       : contact.contactPhoto
     : null;
 
-  const renderField = (
-    label: string,
-    val: string | string[] | { title: string; value: string }[]
-  ) => {
-    if (!val || val.length === 0) return null;
+const renderField = (
+  label: string,
+  val: string | string[] | { title: string; value: string }[]
+) => {
+  if (!val || val.length === 0) return null;
 
+  const linkableFields = ["Documents", "LinkedIn", "Sites web", "Telegram", "Discord", "X (Twitter)"];
+
+  if (linkableFields.includes(label) && Array.isArray(val)) {
     return (
       <div className="mb-2">
         <strong>{label}:</strong>
-        {Array.isArray(val) ? (
-          <ul className="list-disc list-inside ml-4">
-            {val.map((v, i) =>
-              typeof v === "object" ? (
-                <li key={i}>
-                  <strong>{v.title ? `${v.title}: ` : ""}</strong>
-                  {v.value}
-                </li>
-              ) : (
-                <li key={i}>{v}</li>
-              )
-            )}
-          </ul>
-        ) : (
-          <p>{val}</p>
-        )}
+        <ul className="list-disc list-inside ml-4">
+          {val.map((entry, i) =>
+            typeof entry === "object" && entry.value ? (
+              <li key={i}>
+                <a
+                  href={entry.value}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  {entry.title || entry.value}
+                </a>
+              </li>
+            ) : typeof entry === "string" ? (
+              <li key={i}>
+                <a
+                  href={entry}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  {entry}
+                </a>
+              </li>
+            ) : null
+          )}
+        </ul>
       </div>
     );
-  };
+  }
+
+  // Cas par défaut (non cliquable)
+  return (
+    <div className="mb-2">
+      <strong>{label}:</strong>
+      {Array.isArray(val) ? (
+        <ul className="list-disc list-inside ml-4">
+          {val.map((v, i) =>
+            typeof v === "object" ? (
+              <li key={i}>
+                <strong>{v.title ? `${v.title}: ` : ""}</strong>
+                {v.value}
+              </li>
+            ) : (
+              <li key={i}>{v}</li>
+            )
+          )}
+        </ul>
+      ) : (
+        <p>{val}</p>
+      )}
+    </div>
+  );
+};
+
 
   return (
     <div className="p-4 border rounded bg-white dark:bg-gray-800 dark:text-white">
