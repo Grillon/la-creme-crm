@@ -99,6 +99,109 @@ const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
   });
 };
 
+const handleEncryptedExport = async () => {
+  const password = prompt("Mot de passe pour chiffrer le fichier ?");
+  if (!password) return;
+
+  const flat = contacts.map(c => ({
+    ...c,
+    contactTags: c.contactTags?.join("|") || "",
+    contactIdeas: c.contactIdeas?.join("|") || "",
+    contactEmail: c.contactEmail?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactPhone: c.contactPhone?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactWebsite: c.contactWebsite?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactX: c.contactX?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactTelegram: c.contactTelegram?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactDiscord: c.contactDiscord?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactLinkedin: c.contactLinkedin?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactDocuments: c.contactDocuments?.map(e => `${e.title};${e.value}`).join("|") || "",
+    contactInfos: c.contactInfos?.map(e => `${e.title};${e.value}`).join("|") || ""
+  }));
+  const csv = Papa.unparse(flat);
+
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({
+    name: "PBKDF2",
+    salt,
+    iterations: 100000,
+    hash: "SHA-256"
+  }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt"]);
+
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(csv));
+  const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+  combined.set(salt);
+  combined.set(iv, salt.length);
+  combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+  const blob = new Blob([btoa(String.fromCharCode(...combined))], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "contacts.csv.aes";
+  a.click();
+};
+
+const handleEncryptedImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const password = prompt("Mot de passe pour déchiffrer le fichier ?");
+  if (!password) return;
+
+  const b64 = await file.text();
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const salt = bytes.slice(0, 16);
+  const iv = bytes.slice(16, 28);
+  const data = bytes.slice(28);
+
+  const enc = new TextEncoder();
+  const dec = new TextDecoder();
+  const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({
+    name: "PBKDF2",
+    salt,
+    iterations: 100000,
+    hash: "SHA-256"
+  }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+
+  const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
+  const csv = dec.decode(decrypted);
+
+  Papa.parse(csv, {
+    header: true,
+    complete: (results) => {
+      const rows = results.data as Record<string, string>[];
+      const parsed = rows.map((row) => {
+        const c: Partial<Contact> = {
+          id: crypto.randomUUID(),
+          contactName: row.contactName,
+        };
+        if (row.contactCompany) c.contactCompany = row.contactCompany;
+        if (row.contactTags) c.contactTags = row.contactTags.split("|");
+        if (row.contactIdeas) c.contactIdeas = row.contactIdeas.split("|");
+        if (row.contactPhoto) c.contactPhoto = row.contactPhoto;
+        if (row.contactEmail) c.contactEmail = parsePairs(row.contactEmail);
+        if (row.contactPhone) c.contactPhone = parsePairs(row.contactPhone);
+        if (row.contactWebsite) c.contactWebsite = parsePairs(row.contactWebsite);
+        if (row.contactX) c.contactX = parsePairs(row.contactX);
+        if (row.contactTelegram) c.contactTelegram = parsePairs(row.contactTelegram);
+        if (row.contactDiscord) c.contactDiscord = parsePairs(row.contactDiscord);
+        if (row.contactLinkedin) c.contactLinkedin = parsePairs(row.contactLinkedin);
+        if (row.contactDocuments) c.contactDocuments = parsePairs(row.contactDocuments);
+        if (row.contactInfos) c.contactInfos = parsePairs(row.contactInfos);
+        if (row.contactFeeling) c.contactFeeling = row.contactFeeling;
+        if (row.contactNotes) c.contactNotes = row.contactNotes;
+        c.contactRole = [];
+        return c as Contact;
+      });
+      setContacts(parsed);
+      localStorage.setItem("contacts", JSON.stringify(parsed));
+    }
+  });
+};
+
+
 const searchTerms = normalizeText(search).split(/\s+/).filter(Boolean);
 
 const visibleContacts = contacts.filter((contact) => {
@@ -145,6 +248,15 @@ const visibleContacts = contacts.filter((contact) => {
     Importer CSV
     <input type="file" accept=".csv" onChange={handleImport} hidden />
   </label>
+<button onClick={handleEncryptedExport} className="bg-purple-600 text-white px-4 py-2 rounded">
+  Exporter CSV chiffré
+</button>
+
+<label className="bg-indigo-600 text-white px-4 py-2 rounded cursor-pointer">
+  Importer CSV chiffré
+  <input type="file" accept=".aes" onChange={handleEncryptedImport} hidden />
+</label>
+
 </div>
 
       <input
