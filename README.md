@@ -1,36 +1,70 @@
 # LaCrème CRM
 
-Mini CRM personnel local et minimaliste pour gérer vos contacts.
+Une mini application CRM légère et personnelle, pour gérer ses contacts comme dans un carnet de notes moderne.  
+Idéale pour garder une trace des échanges humains sans la lourdeur d’un vrai CRM.
 
-## Fonctionnalités
+[🔁 Partage via Pairdrop](https://pairdrop.net)
 
-- Ajout/modification/suppression de contacts
-- Champs personnalisables (email, téléphone, site web, réseaux sociaux, documents...)
-- Ajout de titres (labels) aux entrées multiples
-- Recherche globale multi-critère
-- Stockage local (localStorage)
-- Export/Import CSV
-- Interface responsive avec prise en charge du dark mode
+## ✨ Fonctionnalités
 
-## Lancer en local
+- Ajout, modification et suppression de contacts
+- Champs personnalisés : nom, entreprise, tags, idées, photos, email, réseaux...
+- Import / export de fichiers CSV
+- Import / export **chiffrés en AES** (sécurité renforcée)
+- Synchronisation facile via Pairdrop (mobile ↔ PC)
+- Stockage **local uniquement** (aucune donnée côté serveur)
+- Affichage des photos LinkedIn via un proxy
+
+## 🚀 Installation
 
 ```bash
+git clone https://github.com/ton-utilisateur/la-creme-crm.git
+cd la-creme-crm
 npm install
 npm run dev
 ```
 
-## Export CSV
+## 🔐 Export CSV chiffré
 
-Cliquez sur **"Exporter CSV"** pour télécharger vos contacts. Chaque ligne correspond à un contact, les champs multi-entrées sont séparés par `|`.
+- Les fichiers exportés peuvent être protégés par une phrase secrète.
+- L’import nécessite la même phrase pour déchiffrer.
+- Format AES-GCM, sécurisé côté navigateur.
+- Aucune donnée ne quitte ton appareil.
 
-## Import CSV
+## 📦 Utilisation d’un fichier `.env`
 
-Cliquez sur **"Importer CSV"** et sélectionnez un fichier exporté au même format. Cela remplacera les contacts actuels.
+Certaines fonctionnalités (comme l’affichage des photos LinkedIn) utilisent un proxy nécessitant une clé secrète.  
+Ajoute un fichier `.env.local` à la racine du projet avec la variable suivante :
 
-## Stockage
+```
+IMAGE_PROXY_SECRET=ta-clé-secrète
+```
 
-Aucune donnée n’est envoyée à un serveur. Tout est conservé dans le `localStorage` de votre navigateur.
+Sans cette variable, les images distantes ne seront pas affichées.
 
-## Licence
+## 📤 Synchronisation entre appareils
 
-MIT
+Tu peux transférer tes fichiers CSV manuellement en toute sécurité via :
+
+👉 [https://pairdrop.net](https://pairdrop.net)
+
+- Compatible mobile, desktop, navigateur
+- Chiffrement bout-en-bout
+- Pas d’installation nécessaire
+
+## 🛠 À venir
+
+- Import/export JSON chiffré
+- Connecteurs vers X, Telegram, LinkedIn, WhatsApp...
+- IA locale pour suggestions de suivi ou résumés d'interactions
+- Gestion d’agenda ou rappels intégrée
+
+## 🧠 Philosophie
+
+Ce projet est conçu pour être un outil personnel, léger, et respectueux de la vie privée.  
+Pas de cloud, pas d’inscription, pas de traçage.  
+Un simple carnet numérique qui te rend la mémoire.
+
+---
+
+Développé avec ❤️ par un explorateur du lien humain.

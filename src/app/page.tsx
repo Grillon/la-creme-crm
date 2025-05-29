@@ -72,9 +72,10 @@ const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
       const rows = results.data as Record<string, string>[];
       const parsed = rows.map((row) => {
         const c: Partial<Contact> = {
-          id: crypto.randomUUID(),
-          contactName: row.contactName,
+        id: row.id || crypto.randomUUID(),
+        contactName: row.contactName,
         };
+
         if (row.contactCompany) c.contactCompany = row.contactCompany;
         if (row.contactTags) c.contactTags = row.contactTags.split("|");
         if (row.contactIdeas) c.contactIdeas = row.contactIdeas.split("|");
@@ -93,8 +94,16 @@ const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
         c.contactRole = [];
         return c as Contact;
       });
-      setContacts(parsed);
-      localStorage.setItem("contacts", JSON.stringify(parsed));
+      const stored = localStorage.getItem("contacts")
+      const existing: Contact[] = stored ? JSON.parse(stored) : []
+
+      const existingIds = new Set(existing.map((c: Contact) => c.id))
+      const parsedUnique = parsed.filter((c: Contact) => !existingIds.has(c.id))
+      const merged = [...existing, ...parsedUnique]
+
+      setContacts(merged)
+      localStorage.setItem("contacts", JSON.stringify(merged))
+
     }
   });
 };
@@ -173,10 +182,11 @@ const handleEncryptedImport = async (e: React.ChangeEvent<HTMLInputElement>) => 
     complete: (results) => {
       const rows = results.data as Record<string, string>[];
       const parsed = rows.map((row) => {
-        const c: Partial<Contact> = {
-          id: crypto.randomUUID(),
-          contactName: row.contactName,
-        };
+      const c: Partial<Contact> = {
+        id: row.id || crypto.randomUUID(),
+        contactName: row.contactName,
+      };
+
         if (row.contactCompany) c.contactCompany = row.contactCompany;
         if (row.contactTags) c.contactTags = row.contactTags.split("|");
         if (row.contactIdeas) c.contactIdeas = row.contactIdeas.split("|");
@@ -195,8 +205,16 @@ const handleEncryptedImport = async (e: React.ChangeEvent<HTMLInputElement>) => 
         c.contactRole = [];
         return c as Contact;
       });
-      setContacts(parsed);
-      localStorage.setItem("contacts", JSON.stringify(parsed));
+      const stored = localStorage.getItem("contacts")
+      const existing: Contact[] = stored ? JSON.parse(stored) : []
+
+      const existingIds = new Set(existing.map((c: Contact) => c.id))
+      const parsedUnique = parsed.filter((c: Contact) => !existingIds.has(c.id))
+      const merged = [...existing, ...parsedUnique]
+
+      setContacts(merged)
+      localStorage.setItem("contacts", JSON.stringify(merged))
+
     }
   });
 };
@@ -234,7 +252,17 @@ const visibleContacts = contacts.filter((contact) => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto text-black dark:text-white bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">LaCrème CRM</h1>
+    <div className="flex items-center justify-between mb-6">
+    <h1 className="text-2xl font-bold">LaCrème CRM</h1>
+    <a
+    href="https://pairdrop.net"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-sm text-blue-500 hover:underline"
+    >
+    ↗ Pairdrop
+    </a>
+    </div>
       <div className="flex gap-4 mb-4">
 <div className="flex justify-between items-center mb-4">
   <h1 className="text-2xl font-bold">Mes contacts</h1>
